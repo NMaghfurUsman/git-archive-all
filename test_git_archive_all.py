@@ -179,6 +179,8 @@ def make_actual_tree(tar_file):
                 a[name] = tar_file.extractfile(m).read()
             else:
                 a[name] = None
+        elif m.isdir():
+            continue
         else:
             raise NotImplementedError
 

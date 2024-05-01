@@ -334,9 +334,8 @@ class GitArchiver(object):
                 repo_file_abspath = path.join(repo_abspath, repo_file_path)  # absolute file path
                 main_repo_file_path = path.join(repo_path, repo_file_path)  # relative to main_repo_abspath
 
-                if self.with_directories == False:
-                    if not path.islink(repo_file_abspath) and path.isdir(repo_file_abspath):
-                        continue
+                if not path.islink(repo_file_abspath) and path.isdir(repo_file_abspath) and not self.with_directories:
+                    continue
 
                 if self.is_file_excluded(repo_abspath, repo_file_path):
                     continue
