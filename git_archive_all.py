@@ -154,6 +154,8 @@ class GitArchiver(object):
 
         @param force_sub: Determines whether submodules are initialized and updated before archiving.
 
+        @param with_directories: Determines whether to archive directories with their own entry.
+
         @param extra: List of extra paths to include in the resulting archive.
 
         @param main_repo_abspath: Absolute path to the main repository (or one of subdirectories).
