@@ -32,11 +32,13 @@ class GitArchiver(object):
     exclude: bool
     extra: List[PathStr]
     force_sub: bool
+    with_directories: bool
 
     def __init__(self,
                  prefix: PathLike,
                  exclude: bool,
                  force_sub: bool,
+                 with_directories: bool,
                  extra: Iterable[PathLike] = None,
                  main_repo_abspath: PathLike = None,
                  git_version: Tuple[int] = None) -> None: ...

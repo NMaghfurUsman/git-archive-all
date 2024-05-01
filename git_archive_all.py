@@ -140,7 +140,7 @@ class GitArchiver(object):
 
     LOG = logging.getLogger('GitArchiver')
 
-    def __init__(self, prefix='', exclude=True, force_sub=False, extra=None, main_repo_abspath=None, git_version=None):
+    def __init__(self, prefix='', exclude=True, force_sub=False, with_directories=False, extra=None, main_repo_abspath=None, git_version=None):
         """
         @param prefix: Prefix used to prepend all paths in the resulting archive.
             Extra file paths are only prefixed if they are not relative.
@@ -186,6 +186,7 @@ class GitArchiver(object):
         self.exclude = exclude
         self.extra = [fspath(e) for e in extra] if extra is not None else []
         self.force_sub = force_sub
+        self.with_directories = with_directories
 
     def create(self, output_path, dry_run=False, output_format=None, compresslevel=None):
         """
@@ -333,8 +334,9 @@ class GitArchiver(object):
                 repo_file_abspath = path.join(repo_abspath, repo_file_path)  # absolute file path
                 main_repo_file_path = path.join(repo_path, repo_file_path)  # relative to main_repo_abspath
 
-                if not path.islink(repo_file_abspath) and path.isdir(repo_file_abspath):
-                    continue
+                if self.with_directories == False:
+                    if not path.islink(repo_file_abspath) and path.isdir(repo_file_abspath):
+                        continue
 
                 if self.is_file_excluded(repo_abspath, repo_file_path):
                     continue
@@ -531,7 +533,7 @@ class GitArchiver(object):
         Return a list of all files as seen by git in a given repo.
         """
         repo_file_paths = cls.run_git_shell(
-            'git ls-files -z --cached --full-name --no-empty-directory',
+            'git ls-tree -z --name-only --full-name -rt HEAD',
             cwd=repo_abspath
         )
         repo_file_paths = repo_file_paths.split(b'\0')[:-1]
@@ -575,7 +577,7 @@ def main(argv=None):
 
     parser = OptionParser(
         usage="usage: %prog [-v] [-C BASE_REPO] [--prefix PREFIX] [--no-export-ignore]"
-              " [--force-submodules] [--include EXTRA1 ...] [--dry-run] [-0 | ... | -9] OUTPUT_FILE",
+              " [--force-submodules] [-D --directories] [--include EXTRA1 ...] [--dry-run] [-0 | ... | -9] OUTPUT_FILE",
         version="%prog {0}".format(__version__)
     )
 
@@ -597,6 +599,11 @@ def main(argv=None):
                       action='store_true',
                       dest='verbose',
                       help='enable verbose mode')
+
+    parser.add_option('-D', '--directories',
+                      dest='with_directories',
+                      action='store_true',
+                      help='include directory entries in archive')
 
     parser.add_option('--no-export-ignore', '--no-exclude',
                       action='store_false',
@@ -657,6 +664,7 @@ def main(argv=None):
         archiver = GitArchiver(options.prefix,
                                options.exclude,
                                options.force_sub,
+                               options.with_directories,
                                options.extra,
                                path.abspath(options.base_repo) if options.base_repo is not None else None
                                )
